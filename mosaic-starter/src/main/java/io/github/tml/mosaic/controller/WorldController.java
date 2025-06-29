@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Objects;
 
 @RestController
-@RequestMapping("/world")
+@RequestMapping("/mosaic/world")
 public class WorldController {
     @Resource
     private WorldService worldService;
