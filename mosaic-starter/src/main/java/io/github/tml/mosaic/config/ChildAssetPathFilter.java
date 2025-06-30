@@ -17,8 +17,9 @@ import java.util.*;
 public class ChildAssetPathFilter extends OncePerRequestFilter {
 
     private static final Set<String> ASSET_PATH_SET = new TreeSet<>();
+
     static {
-        ASSET_PATH_SET.add("/mosaic/");
+        ASSET_PATH_SET.add("/mosaic");
     }
 
     @Override
@@ -48,5 +49,9 @@ public class ChildAssetPathFilter extends OncePerRequestFilter {
             }
         }
         return null;
+    }
+
+    public static void addAssetResource(String assetPath){
+        ASSET_PATH_SET.add(assetPath);
     }
 }

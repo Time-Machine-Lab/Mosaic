@@ -10,7 +10,7 @@ import java.util.List;
 
 @Configuration
 public class MosaicEventConfig {
-    
+
     @Bean
     public MosaicEventBroadcaster cubeEventBroadcaster(List<MosaicEventListener> mosaicEventListeners) {
         DefaultMosaicEventBroadcaster broadcaster = DefaultMosaicEventBroadcaster.broadcaster();
@@ -20,4 +20,5 @@ public class MosaicEventConfig {
         }
         return broadcaster;
     }
+
 }

@@ -2,7 +2,7 @@
   "installations": [
     {
       "type" : "JAR",
-      "location" : "classpath:jar/mosaic-test-plugin-1.0-SNAPSHOT.jar"
+      "location" : "classpath:mosaic-test-plugin-1.0-SNAPSHOT.jar"
     }
   ]
 }

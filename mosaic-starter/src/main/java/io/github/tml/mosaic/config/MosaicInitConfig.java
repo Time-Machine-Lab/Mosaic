@@ -4,6 +4,9 @@ import io.github.tml.mosaic.GoldenShovel;
 import io.github.tml.mosaic.actuator.CubeActuatorProxy;
 import io.github.tml.mosaic.converter.CubeDefinitionConverter;
 import io.github.tml.mosaic.converter.InfoContextConverter;
+import io.github.tml.mosaic.core.event.DefaultMosaicEventBroadcaster;
+import io.github.tml.mosaic.core.event.MosaicEventBroadcaster;
+import io.github.tml.mosaic.core.event.listener.MosaicEventListener;
 import io.github.tml.mosaic.cube.factory.ClassPathCubeContext;
 import io.github.tml.mosaic.cube.factory.context.CubeContext;
 import io.github.tml.mosaic.cube.factory.definition.CubeDefinition;
@@ -26,6 +29,7 @@ import java.util.List;
 @Slf4j
 @Configuration
 public class MosaicInitConfig {
+
     /*
     * 当前世界
     * */
@@ -38,7 +42,7 @@ public class MosaicInitConfig {
      * cube上下文容器
      */
     @Bean
-    @DependsOn({"infoContextInstaller"})
+    @DependsOn({"infoContextInstaller", "cubeEventBroadcaster"})
     public CubeContext cubeContext(InfoContextInstaller infoContextInstaller) {
         ClassPathCubeContext context = new ClassPathCubeContext();
 

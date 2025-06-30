@@ -31,4 +31,10 @@ public @interface MCube {
      * 方块的模式: 单例、多例
      */
     String model() default "singleton";
+
+    /**
+     * 前端页面地址
+     * @return
+     */
+    String frontPath() default "";
 }

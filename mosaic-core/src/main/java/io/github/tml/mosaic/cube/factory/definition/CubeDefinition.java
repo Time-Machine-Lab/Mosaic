@@ -19,6 +19,7 @@ public class CubeDefinition {
     private String description;
     private String model;
     private String className;
+    private String frontPath;
     private transient ClassLoader classLoader;
     private final List<ExtensionPackageDefinition> extensionPackages = new ArrayList<>();
 
