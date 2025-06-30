@@ -42,9 +42,6 @@ public class DefaultCubeManager extends DefaultSingletonCubeRegistry implements 
         instanceIdToCubeMap.put(instanceId, cube);
         instanceIdToCubeIdMap.put(instanceId, cubeId);
         
-        log.debug("✓ Cube实例注册成功 | CubeId: {} | 实例ID: {} | 名称: {}", 
-                cubeId, instanceId, cube.getMetaData().getName());
-        
         return instanceId;
     }
 

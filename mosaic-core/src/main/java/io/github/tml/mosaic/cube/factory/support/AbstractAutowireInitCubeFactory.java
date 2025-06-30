@@ -17,20 +17,20 @@ public abstract class AbstractAutowireInitCubeFactory extends AbstractAutowireCo
     @Override
     protected Cube executeInitializationPhase(Cube cube, CubeDefinition cubeDefinition, Object[] args) throws CubeException {
         try {
-            log.debug("开始初始化阶段 | CubeId: {}", cube.getCubeId());
+            log.debug("Initialization phase started | CubeId: {}", cube.getCubeId());
 
-            // 执行前置初始化处理
+            // Pre-initialization hook
             preInitialization(cube, cubeDefinition, args);
 
-            // 执行核心初始化
+            // Main initialization logic
             if (cube.init()) {
-                log.info("✓ Cube初始化成功 | CubeId: {}, CubeName: {}", cube.getCubeId(), cube.getMetaData().getName());
+                log.info("✓ Cube initialized successfully | CubeId: {}, CubeName: {}", cube.getCubeId(), cube.getMetaData().getName());
 
-                // 执行后置初始化处理
+                // Post-initialization hook
                 postInitialization(cube, cubeDefinition, args);
                 return cube;
             } else {
-                String errorMsg = String.format("Cube初始化返回false | CubeId: %s", cube.getCubeId());
+                String errorMsg = String.format("Cube initialization returned false | CubeId: %s", cube.getCubeId());
                 log.error("✗ {}", errorMsg);
                 throw new CubeException(errorMsg);
             }
@@ -38,7 +38,7 @@ public abstract class AbstractAutowireInitCubeFactory extends AbstractAutowireCo
         } catch (CubeException e) {
             throw e;
         } catch (Exception e) {
-            String errorMsg = String.format("Cube初始化异常 | CubeId: %s", cube.getCubeId());
+            String errorMsg = String.format("Cube initialization exception | CubeId: %s", cube.getCubeId());
             log.error("✗ {}: {}", errorMsg, e.getMessage(), e);
             throw new CubeException(errorMsg + ": " + e.getMessage(), e);
         }

@@ -7,8 +7,10 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
+    ConfigDisplay: typeof import('./components/plugin/ConfigDisplay.vue')['default']
     ConfigFormComponent: typeof import('./components/common/ConfigFormComponent.vue')['default']
     ConfigInputComponent: typeof import('./components/common/ConfigInputComponent.vue')['default']
+    ConfigValueRenderer: typeof import('./components/plugin/config/ConfigValueRendererComponent.vue')['default']
     ConfirmComponent: typeof import('./components/common/ConfirmComponent.vue')['default']
     CreateHotSwapInfoDialog: typeof import('./components/hotSwap/CreateHotSwapInfoDialog.vue')['default']
     CreateSlotComponent: typeof import('./components/slot/CreateSlotComponent.vue')['default']

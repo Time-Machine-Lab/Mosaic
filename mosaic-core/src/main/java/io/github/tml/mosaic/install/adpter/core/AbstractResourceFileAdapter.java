@@ -48,12 +48,13 @@ public abstract class AbstractResourceFileAdapter implements ResourceFileAdapter
             Optional.ofNullable(collectorList)
                     .orElse(Collections.emptyList())
                     .forEach(collector -> {
-                        long l = System.currentTimeMillis();
+                        long start = System.currentTimeMillis();
                         collector.collect(infoContext);
-                        log.info("[{}] {}ms", collector.getClass(), l - System.currentTimeMillis());
+                        long timeSpent = System.currentTimeMillis() - start;
+                        log.info("Collecting info with [{}] took {} ms", collector.getClass().getSimpleName(), timeSpent);
                     });
-        } catch (Exception e){
-            log.error("adapter collect info error :{}",e.getMessage());
+        } catch (Exception e) {
+            log.error("Error during info collection: {}", e.getMessage(), e);
         }
     }
 }

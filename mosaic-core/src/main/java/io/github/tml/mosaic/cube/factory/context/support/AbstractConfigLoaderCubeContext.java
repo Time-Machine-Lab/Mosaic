@@ -5,7 +5,6 @@ import io.github.tml.mosaic.core.execption.CubeException;
 import io.github.tml.mosaic.core.tools.guid.GUUID;
 import io.github.tml.mosaic.core.tools.param.ConfigInfo;
 import io.github.tml.mosaic.core.tools.param.ConfigItem;
-import io.github.tml.mosaic.cube.Cube;
 import io.github.tml.mosaic.cube.config.ConfigReader;
 import io.github.tml.mosaic.cube.config.YamlConfigReader;
 import io.github.tml.mosaic.cube.factory.definition.CubeDefinition;
@@ -16,45 +15,36 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 描述: 配置加载器Cube上下文抽象实现
- * 负责从配置文件中加载配置信息
+ * Abstract Cube context for loading configuration from files.
+ * Handles config reading, parsing, and storage.
  *
- * @author suifeng
- * 日期: 2025/6/7
+ * Author: suifeng
+ * Date: 2025/6/7
  */
 @Getter
 @Slf4j
 public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshableCubeContext {
 
-    /**
-     * 配置信息存储容器
-     * Key: YAML文件中的顶级配置键
-     * Value: 对应配置键下的完整配置对象
-     */
+    /** Stores configuration data by top-level config key */
     protected final Map<String, JSONObject> configurationMap = new ConcurrentHashMap<>();
 
-    /**
-     * 配置读取器
-     *  获取当前配置读取器
-     */
+    /** The config file reader */
     private ConfigReader configReader;
 
     @Override
     public Map<String, Object> updateConfigurations(String cubeId, Map<String, Object> config) {
         CubeDefinition cubeDefinition = getAllCubeDefinitionMap().get(new GUUID(cubeId));
-        ConfigInfo configInfo = null;
         if (cubeDefinition == null) {
-            log.error("cube definition not found, cubeId:{}", cubeId);
-            throw new CubeException("cube definition not found, cubeId:" + cubeId);
-        } else {
-            configInfo = cubeDefinition.getConfigInfo();
+            log.error("Cube definition not found for cubeId: {}", cubeId);
+            throw new CubeException("Cube definition not found, cubeId: " + cubeId);
         }
+        ConfigInfo configInfo = cubeDefinition.getConfigInfo();
 
-        // 校验必填项
+        // Check required configs
         List<String> missing = configInfo.validateRequiredConfigs(config);
         List<String> result = new ArrayList<>(missing);
 
-        // 校验每个配置项
+        // Validate each config item
         for (Map.Entry<String, Object> entry : config.entrySet()) {
             String name = entry.getKey();
             Object value = entry.getValue();
@@ -66,59 +56,47 @@ public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshabl
         }
 
         if (!result.isEmpty()) {
-            throw new CubeException("cube configs update failed : { " + String.join(", ", result) + " } ");
+            throw new CubeException("Cube configs update failed: { " + String.join(", ", result) + " }");
         }
 
         JSONObject jsonObject = new JSONObject();
         jsonObject.putAll(config);
         configurationMap.put(cubeId, jsonObject);
 
-        // TODO 如果是单例并且，需要重新移除并且初始化
-        if (cubeDefinition.getModel().equals("singleton")) {
+        // If singleton, remove and re-initialize
+        if ("singleton".equals(cubeDefinition.getModel())) {
             removeSingletonCube(new GUUID(cubeId));
         }
 
         return config;
     }
 
-    /**
-     * 构造函数，初始化配置读取器
-     */
+    /** Constructor: initialize config reader */
     public AbstractConfigLoaderCubeContext() {
         super();
         this.configReader = createDefaultConfigReader();
         log.info("AbstractConfigLoaderCubeContext initialized with default config reader");
     }
 
-    /**
-     * 刷新配置资源的具体实现
-     * 从指定的配置位置加载配置信息
-     *
-     * @throws CubeException 配置加载异常
-     */
+    /** Refresh and reload all configuration resources from files */
     @Override
     protected void refreshConfigurationResources() throws CubeException {
-        log.info("Starting configuration resources refresh...");
+        log.info("Refreshing configuration resources...");
 
         try {
-            // 清空现有配置
             clearConfigurations();
-
-            // 获取配置文件位置
             String[] configLocations = getConfigLocations();
 
             if (configLocations == null || configLocations.length == 0) {
-                log.warn("No configuration locations specified, using default configuration");
+                log.warn("No configuration locations specified, loading default configuration.");
                 loadDefaultConfiguration();
                 return;
             }
 
-            log.info("Loading configurations from {} locations: {}", configLocations.length, Arrays.toString(configLocations));
-
-            // 逐个加载配置文件
+            log.info("Loading configuration from {} locations: {}", configLocations.length, Arrays.toString(configLocations));
             for (String configLocation : configLocations) {
                 if (configLocation == null || configLocation.trim().isEmpty()) {
-                    log.warn("Skipping null or empty configuration location");
+                    log.warn("Skipping empty configuration location.");
                     continue;
                 }
                 loadConfigurationFromLocation(configLocation.trim());
@@ -130,64 +108,46 @@ public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshabl
         }
     }
 
-    /**
-     * 清空所有配置信息
-     */
+    /** Remove all stored configuration data */
     protected void clearConfigurations() {
         configurationMap.clear();
-        log.info("All configurations cleared");
+        log.info("All configurations cleared.");
     }
 
-    /**
-     * 从指定位置加载配置
-     *
-     * @param configLocation 配置文件位置
-     * @throws CubeException 配置加载异常
-     */
+    /** Load and parse configuration from a given file location */
     private void loadConfigurationFromLocation(String configLocation) throws CubeException {
-        log.debug("Loading configuration from location: {}", configLocation);
+        log.debug("Loading configuration from: {}", configLocation);
 
         try {
-            // 设置配置文件路径
+            // Set config file path if using YAML reader
             if (configReader instanceof YamlConfigReader) {
                 ((YamlConfigReader) configReader).setYamlFilePath(configLocation);
             }
 
-            // 读取配置
             JSONObject configData = configReader.readConfig();
-
             if (configData == null || configData.isEmpty()) {
-                log.warn("No configuration data found in location: {}", configLocation);
+                log.warn("No configuration data found in: {}", configLocation);
                 return;
             }
 
-            // 解析并存储配置
             parseAndStoreConfiguration(configData, configLocation);
-
-            log.info("Successfully loaded configuration from: {}", configLocation);
+            log.info("Loaded configuration from: {}", configLocation);
 
         } catch (Exception e) {
-            log.error("Failed to load configuration from location: {}", configLocation, e);
+            log.error("Failed to load configuration from: {}", configLocation, e);
             throw new CubeException("Failed to load configuration from: " + configLocation, e);
         }
     }
 
-    /**
-     * 解析并存储配置数据
-     * 将配置数据按顶级键分组存储
-     *
-     * @param configData 配置数据
-     * @param configLocation 配置文件位置（用于日志）
-     */
+    /** Parse configuration data and store by top-level key */
     private void parseAndStoreConfiguration(JSONObject configData, String configLocation) {
-        log.debug("Parsing configuration data from: {}", configLocation);
-
+        log.debug("Parsing configuration from: {}", configLocation);
         for (Map.Entry<String, Object> entry : configData.entrySet()) {
             String topLevelKey = entry.getKey();
             Object value = entry.getValue();
 
             if (topLevelKey == null || topLevelKey.trim().isEmpty()) {
-                log.warn("Skipping configuration entry with null or empty key from: {}", configLocation);
+                log.warn("Skipping configuration with empty key from: {}", configLocation);
                 continue;
             }
 
@@ -195,105 +155,74 @@ public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshabl
             if (value instanceof Map) {
                 configSection = new JSONObject((Map<String, Object>) value);
             } else {
-                // 如果不是Map类型，创建一个包装对象
                 configSection = new JSONObject();
                 configSection.put("value", value);
             }
-
             updateConfiguration(topLevelKey, configSection);
-            log.debug("Stored configuration section: {} from location: {}", topLevelKey, configLocation);
+            log.debug("Stored config section: {} from: {}", topLevelKey, configLocation);
         }
     }
 
-    /**
-     * 加载默认配置
-     * 当没有指定配置位置时使用
-     */
+    /** Load default configuration if no location is provided */
     private void loadDefaultConfiguration() {
         log.info("Loading default configuration...");
-
         try {
             JSONObject defaultConfig = configReader.readConfig();
             if (defaultConfig != null && !defaultConfig.isEmpty()) {
                 parseAndStoreConfiguration(defaultConfig, "default");
-                log.info("Default configuration loaded successfully");
+                log.info("Default configuration loaded.");
             } else {
-                log.warn("No default configuration available");
+                log.warn("No default configuration found.");
             }
         } catch (Exception e) {
             log.error("Failed to load default configuration", e);
         }
     }
 
-    /**
-     * 创建默认配置读取器
-     *
-     * @return ConfigReader实例
-     */
+    /** Create the default config reader (YAML by default) */
     protected ConfigReader createDefaultConfigReader() {
         return new YamlConfigReader();
     }
 
-    /**
-     * 设置配置读取器
-     *
-     * @param configReader 配置读取器
-     */
+    /** Set the config reader instance */
     public void setConfigReader(ConfigReader configReader) {
         this.configReader = Objects.requireNonNull(configReader, "ConfigReader cannot be null");
-        log.info("ConfigReader updated to: {}", configReader.getClass().getSimpleName());
+        log.info("ConfigReader set to: {}", configReader.getClass().getSimpleName());
     }
 
-    /**
-     * 更新配置信息
-     *
-     * @param configKey 配置键
-     * @param configValue 配置值
-     */
+    /** Update or add configuration under a particular key */
     protected void updateConfiguration(String configKey, JSONObject configValue) {
         if (configKey == null || configKey.trim().isEmpty()) {
-            log.warn("Attempted to update configuration with null or empty key");
+            log.warn("Attempted to update configuration with empty key.");
             return;
         }
-
         if (configValue == null) {
             log.warn("Attempted to update configuration with null value for key: {}", configKey);
             configValue = new JSONObject();
         }
-
         configurationMap.put(configKey, configValue);
         log.debug("Configuration updated for key: {}", configKey);
     }
 
-    /**
-     * 获取指定键的配置信息
-     *
-     * @param configKey 配置键
-     * @return 配置对象，如果不存在则返回空的JSONObject
-     */
+    /** Get configuration by key; return empty JSONObject if not found */
     @Override
     public Map<String, Object> getCubeConfiguration(String configKey) {
         if (configKey == null || configKey.trim().isEmpty()) {
-            log.warn("Attempted to get configuration with null or empty key");
+            log.warn("Attempted to get configuration with empty key.");
             return new JSONObject();
         }
-
         JSONObject config = configurationMap.get(configKey);
         return config != null ? config : new JSONObject();
     }
 
-    /**
-     * 将JSONObject转换为Map<String, Object>
-     * 支持嵌套对象的递归转换，确保类型安全和性能优化
-     */
+    /** Convert JSONObject to Map<String, Object>, supporting recursion */
     private Map<String, Object> convertJsonObjectToMap(JSONObject jsonObject) {
         if (jsonObject == null || jsonObject.isEmpty()) {
-            log.debug("Empty or null JSONObject provided, returning empty map");
+            log.debug("Empty or null JSONObject, returning empty map.");
             return Collections.emptyMap();
         }
 
         Map<String, Object> resultMap = new HashMap<>(jsonObject.size());
-
         try {
             for (Map.Entry<String, Object> entry : jsonObject.entrySet()) {
                 String key = entry.getKey();
@@ -308,23 +237,19 @@ public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshabl
                 }
             }
         } catch (Exception e) {
-            log.error("Error converting JSONObject to Map for configuration: {}", jsonObject, e);
+            log.error("Error converting JSONObject to Map: {}", jsonObject, e);
             throw new CubeException("Failed to convert configuration to map", e);
         }
-
         return resultMap;
     }
 
-    /**
-     * 处理JSONArray到List的转换
-     */
+    /** Convert JSONArray to List<Object>, supporting recursion */
     private List<Object> convertJsonArrayToList(com.alibaba.fastjson.JSONArray jsonArray) {
         if (jsonArray == null || jsonArray.isEmpty()) {
             return Collections.emptyList();
         }
 
         List<Object> resultList = new ArrayList<>(jsonArray.size());
-
         for (Object item : jsonArray) {
             if (item instanceof JSONObject) {
                 resultList.add(convertJsonObjectToMap((JSONObject) item));
@@ -334,15 +259,12 @@ public abstract class AbstractConfigLoaderCubeContext extends AbstractRefreshabl
                 resultList.add(item);
             }
         }
-
         return resultList;
     }
 
     /**
-     * 获取配置文件位置的抽象方法
-     * 子类需要实现此方法来提供配置文件路径
-     *
-     * @return 配置文件位置数组
+     * Abstract method for providing config file locations.
+     * Subclasses must implement to specify config paths.
      */
     protected abstract String[] getConfigLocations();
 }

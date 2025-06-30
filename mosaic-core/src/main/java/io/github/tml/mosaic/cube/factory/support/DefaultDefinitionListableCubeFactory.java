@@ -51,7 +51,6 @@ public class DefaultDefinitionListableCubeFactory extends ListableCubeFactory {
         try {
             CubeDefinitionRegisteredEvent event = new CubeDefinitionRegisteredEvent(this, cubeId, cubeDefinition);
             eventBroadcaster.broadcastEvent(event);
-            log.debug("Registered CubeDefinition [{}]", cubeId);
             return new CubeRegistrationResult(cubeId, true, "Registration successful");
         } catch (Exception e) {
             String errorMsg = String.format("Event publish failed for cubeId [%s]", cubeId);

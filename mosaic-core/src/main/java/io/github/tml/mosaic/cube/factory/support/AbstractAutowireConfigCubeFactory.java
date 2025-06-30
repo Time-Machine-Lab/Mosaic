@@ -32,25 +32,25 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
      */
     protected final Cube processConfigurationPhase(Cube cube, CubeDefinition cubeDefinition, Object[] args) throws CubeException {
         try {
-            log.debug("开始配置处理阶段 | CubeId: {}", cube.getCubeId());
+            log.debug("Starting configuration phase | CubeId: {}", cube.getCubeId());
 
-            // 1. 设置配置定义信息
+            // 1. Set config definition
             setupConfigDefinition(cube, cubeDefinition);
 
-            // 2. 提取配置参数
+            // 2. Extract config parameters
             Map<String, Object> extractedConfigs = extractConfigs(args);
 
-            // 3. 执行配置校验与设置
+            // 3. Validate and apply configs
             validateAndApplyConfigs(cube, extractedConfigs);
 
-            log.info("✓ 配置处理完成 | CubeId: {}, 最终配置项: {}", cube.getCubeId(), cube.getAllConfigs().size());
+            log.info("✓ Configuration phase completed | CubeId: {}, Config size: {}", cube.getCubeId(), cube.getAllConfigs().size());
 
             return cube;
         } catch (CubeException e) {
-            log.error("✗ 配置处理失败 | CubeId: {}, 错误: {}", cube.getCubeId(), e.getMessage());
+            log.error("✗ Configuration phase failed | CubeId: {}, Error: {}", cube.getCubeId(), e.getMessage());
             throw e;
         } catch (Exception e) {
-            String errorMsg = String.format("配置处理异常 | CubeId: %s", cube.getCubeId());
+            String errorMsg = String.format("Configuration phase exception | CubeId: %s", cube.getCubeId());
             log.error("✗ {}: {}", errorMsg, e.getMessage(), e);
             throw new CubeException(errorMsg + ": " + e.getMessage(), e);
         }
@@ -63,9 +63,9 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
         ConfigInfo configInfo = cubeDefinition.getConfigInfo();
         if (configInfo != null) {
             cube.setConfigInfo(configInfo);
-            log.debug("✓ 配置定义已设置 | CubeId: {}, 配置项数量: {}", cube.getCubeId(), configInfo.configItemCount());
+            log.debug("✓ Config definition set | CubeId: {}, Config items: {}", cube.getCubeId(), configInfo.configItemCount());
         } else {
-            log.debug("无配置定义 | CubeId: {}", cube.getCubeId());
+            log.debug("No config definition | CubeId: {}", cube.getCubeId());
         }
     }
 
@@ -75,11 +75,9 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
      */
     protected void validateAndApplyConfigs(Cube cube, Map<String, Object> configs) throws CubeException {
         try {
-            // 始终调用setConfigs，让ConfigurableEntity处理完整的配置流程
             cube.setConfigs(configs);
         } catch (CubeException e) {
-            // 配置校验异常，增强错误信息
-            String enhancedMsg = String.format("配置校验失败 | CubeId: %s | 原因: %s", cube.getCubeId(), e.getMessage());
+            String enhancedMsg = String.format("Config validation failed | CubeId: %s | Reason: %s", cube.getCubeId(), e.getMessage());
             throw new CubeException(enhancedMsg, e);
         }
     }
@@ -91,7 +89,7 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
         Map<String, Object> configs = new HashMap<>();
 
         if (args == null || args.length == 0) {
-            log.debug("无配置参数传入");
+            log.debug("No config arguments provided.");
             return configs;
         }
 
@@ -103,14 +101,14 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
                 } else if (arg instanceof Properties) {
                     extractFromProperties(configs, (Properties) arg);
                 } else if (arg != null) {
-                    log.debug("跳过非配置参数 [索引: {}]: {}", i, arg.getClass().getSimpleName());
+                    log.debug("Skipped non-config argument [index: {}]: {}", i, arg.getClass().getSimpleName());
                 }
             } catch (Exception e) {
-                log.warn("提取配置失败 [索引: {}]: {}", i, e.getMessage());
+                log.warn("Failed to extract config [index: {}]: {}", i, e.getMessage());
             }
         }
 
-        log.debug("配置提取完成，共提取 {} 个配置项", configs.size());
+        log.debug("Config extraction finished, total {} config items", configs.size());
         return configs;
     }
 
@@ -122,10 +120,9 @@ public abstract class AbstractAutowireConfigCubeFactory extends AbstractAutowire
             if (k instanceof String) {
                 configs.put((String) k, v);
             } else if (k != null) {
-                // 尝试将非String键转换为String
                 String stringKey = k.toString();
                 configs.put(stringKey, v);
-                log.debug("键类型转换: {} -> {}", k.getClass().getSimpleName(), stringKey);
+                log.debug("Key type converted: {} -> {}", k.getClass().getSimpleName(), stringKey);
             }
         });
     }
