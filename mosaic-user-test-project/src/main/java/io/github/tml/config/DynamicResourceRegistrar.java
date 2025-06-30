@@ -32,8 +32,7 @@ public class DynamicResourceRegistrar {
         String resourceLocation = "classpath:/io/github/tml/plugin/" + pluginName + "/view/";
 
         ResourceHandlerRegistration registration = registry.addResourceHandler(resourcePath)
-                .addResourceLocations(resourceLocation)
-                .setCacheControl(CacheControl.maxAge(30, TimeUnit.DAYS));
+                .addResourceLocations(resourceLocation);
 
         // 保存注册引用
         registrations.put(pluginName, registration);

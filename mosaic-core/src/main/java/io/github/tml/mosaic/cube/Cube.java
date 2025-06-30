@@ -104,6 +104,7 @@ public class Cube extends ConfigurableEntity implements CubeApi {
         private String version;
         private String description;
         private String model;
+        private String frontPath; //Cube插件页面地址
         private Class<?> clazz;
 
         // 扩展包元数据
