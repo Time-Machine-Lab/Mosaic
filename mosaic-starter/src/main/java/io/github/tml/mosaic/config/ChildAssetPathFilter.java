@@ -17,20 +17,19 @@ import java.util.*;
 public class ChildAssetPathFilter extends OncePerRequestFilter {
 
     private static final Set<String> ASSET_PATH_SET = new TreeSet<>();
-
-    static {
-        ASSET_PATH_SET.add("/mosaic");
-    }
+    private static String currentPath = null;
+    private Map<String, String> pathMap = new HashMap<>();
 
     @Override
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse resp, FilterChain filterChain) throws ServletException, IOException {
 
         String requestURI = req.getRequestURI();
-
+        if(requestURI.endsWith("/index.html")){
+            currentPath = requestURI.split("index.html")[0];
+        }
         // 处理子页面的静态资源
-        String assetPath = null;
-        if(Objects.nonNull(assetPath = getAssetPath(req)) && requestURI.startsWith("/assets/")) {
-            String newPath = assetPath + requestURI;
+        if(Objects.nonNull(currentPath) && (requestURI.startsWith("/assets/"))) {
+            String newPath = currentPath + requestURI;
             req.getRequestDispatcher(newPath).forward(req, resp);
             return;
         }
