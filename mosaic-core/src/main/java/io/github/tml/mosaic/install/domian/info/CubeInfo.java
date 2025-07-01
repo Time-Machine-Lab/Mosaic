@@ -21,6 +21,7 @@ public class CubeInfo {
     private String description;
     private String model;
     private String className;
+    private String frontPath;
     private Class<?> clazz;
     private List<ExtensionPackageInfo> extensionPackages = new ArrayList<>();
     private transient ClassLoader classLoader;
@@ -36,5 +37,6 @@ public class CubeInfo {
         this.setVersion(mCube.version());
         this.setDescription(mCube.description());
         this.setModel(mCube.model());
+        this.setFrontPath(mCube.frontPath());
     }
 }

@@ -8,7 +8,7 @@ import static io.github.tml.plugin.systemLog.config.Constant.PLUGIN_ID_P;
 
 @MCube(name = "系统日志（多例测试）",
         description = "用于输出系统日志的插件",
-        version = "1.0.1", model = "property")
+        version = "1.0.1", model = "property", frontPath = "classpath:systemLog/ui/")
 public class PropertySystemLogCube extends MosaicCube {
 
     String outputFormat = "";
