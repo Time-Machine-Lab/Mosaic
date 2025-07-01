@@ -6,4 +6,8 @@ const router = createRouter({
   history: createWebHistory(),
   routes,
 })
+
+router.isReady().then(() => {
+  console.log('Initial route:', routes)
+})
 export default router
