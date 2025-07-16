@@ -28,6 +28,8 @@ public class CubeActuatorProxy {
 
     protected SlotManager slotManager;
 
+    private static final Object[] EMPTY_ARGS = new Object[]{};
+
     public void init(CubeContext context, SlotManager slotManager) {
         this.context = context;
         this.slotManager = slotManager;
@@ -57,6 +59,16 @@ public class CubeActuatorProxy {
         return null;
     }
 
+    public boolean stop(GUID slotId) throws ActuatorException {
+        try {
+            AbstractCubeActuator.ExecuteContext executeContext = getExecuteContext(slotId, EMPTY_ARGS);
+            return chooseActuator(executeContext).stop(executeContext);
+        }catch (ActuatorException e){
+            log.error("slot {} try to stop running cube error:{}", slotId, e.getMessage());
+        }
+        return true;
+    }
+
     private AbstractCubeActuator.ExecuteContext getExecuteContext(GUID slotId, Object[] args) throws ActuatorException{
         Slot slot = Optional.ofNullable(slotManager.getSlot(slotId))
                 .orElseThrow(()->new ActuatorException("actuator execute slot is null"));
@@ -68,7 +80,7 @@ public class CubeActuatorProxy {
         GUID exPackageId = setupCubeInfo.getExPackageId();
         GUID exPointId = setupCubeInfo.getExPointId();
 
-        Cube cube = Optional.ofNullable(context.getCube(cubeId))
+        Cube cube = Optional.ofNullable(context.getCube(cubeId, setupCubeInfo.getConfigId()))
                 .orElseThrow(()->new ActuatorException(String.format("cube not found :%s", executeInfoLog(cubeId, null, null))));
 
         ExtensionPackage exPackage = Optional.ofNullable(cube.findExPackage(exPackageId))

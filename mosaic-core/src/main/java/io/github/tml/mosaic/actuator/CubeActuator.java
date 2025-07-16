@@ -16,6 +16,8 @@ public interface CubeActuator {
     // TODO execute方法改写
     <T> T execute(ExecuteContext executeContext);
 
+    boolean stop(ExecuteContext executeContext);
+
     @Data
     @AllArgsConstructor
     @NoArgsConstructor

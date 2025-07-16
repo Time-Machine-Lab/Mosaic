@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.*;
 
 @Slf4j
@@ -59,30 +60,65 @@ public class AngelCubeActuator extends AbstractCubeActuator{
                         log.error("angle cube:{} stop time over 2s, force stop", worker.angelCube.cubeId());
                         stopFuture.cancel(true);
                     }
+                    removeAngleCube(worker.angelCube.cubeId());
                 }
             }
         });
     }
 
-    @Override
-    public <T> T execute(ExecuteContext executeContext) {
+    /**
+     * 从执行上下文中获取天使方块，如果不是则抛出移除
+     * @param executeContext
+     * @return
+     */
+    private AngelCube checkAndGetAngleCube(ExecuteContext executeContext) throws ActuatorException{
         MosaicCube cube = executeContext.getCube();
         if (!(cube instanceof AngelCube)) {
             throw new ActuatorException("{} is not an AngelCube.");
         }
+        return (AngelCube) cube;
+    }
+
+    @Override
+    public <T> T execute(ExecuteContext executeContext) {
+        AngelCube cube = checkAndGetAngleCube(executeContext);
         String cubeId = cube.cubeId();
         synchronized (cubeId){
-            AngelCubeWorker worker = angelCubeWorkerMap.getOrDefault(cubeId, new AngelCubeWorker((AngelCube) cube));
+            AngelCubeWorker worker = angelCubeWorkerMap.getOrDefault(cubeId, new AngelCubeWorker(cube));
             if (!angelCubeWorkerMap.containsKey(cubeId)) {
                 worker.start();
                 angelCubeWorkerMap.put(cubeId, worker);
-            }else{
-                worker.stop();
             }
         }
         return null;
     }
 
+
+
+    @Override
+    public boolean stop(ExecuteContext executeContext) {
+        AngelCube cube = checkAndGetAngleCube(executeContext);
+        String cubeId = cube.cubeId();
+        synchronized (cubeId){
+            AngelCubeWorker worker = angelCubeWorkerMap.get(cubeId);
+            if(Objects.isNull(worker)){
+                return false;
+            }
+            if(Objects.isNull(worker.getStopFuture())){
+                worker.stop();
+            }else{
+                // 再次停止会交给清道夫去关停cube
+                deathbedCareList.add(worker);
+            }
+            return true;
+        }
+    }
+
+    public void removeAngleCube(String cubeId){
+        synchronized (cubeId){
+            angelCubeWorkerMap.remove(cubeId);
+        }
+    }
     public class AngelCubeWorker{
 
         private final AngelCube angelCube;
@@ -115,6 +151,7 @@ public class AngelCubeActuator extends AbstractCubeActuator{
                 if (!startFuture.isDone()) {
                     startFuture.cancel(true);
                 }
+                removeAngleCube(angelCube.cubeId());
             });
         }
     }

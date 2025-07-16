@@ -3,6 +3,7 @@ package io.github.tml.mosaic.cube.factory.definition;
 import io.github.tml.mosaic.core.tools.param.ConfigInfo;
 import io.github.tml.mosaic.install.domian.info.CubeListenerInfo;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
  * 日期: 2025/6/6
  */
 @Data
+@NoArgsConstructor
 public class CubeDefinition {
 
     private String id;

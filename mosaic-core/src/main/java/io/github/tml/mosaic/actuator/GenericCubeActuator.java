@@ -19,6 +19,11 @@ public class GenericCubeActuator extends AbstractCubeActuator{
         return this.execute0(executeContext);
     }
 
+    @Override
+    public boolean stop(ExecuteContext executeContext) {
+        return true;
+    }
+
     private void preExecuteLog(ExecuteContext executeContext) {
         log.info(" {} ready execute plugin, cube:{}, slot:{}, exPackage:{}, exPoint:{}",
                 this.getClass().getName(),

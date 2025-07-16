@@ -14,4 +14,9 @@ public class AsyncCubeActuator extends AbstractCubeActuator{
     public <T> T execute(ExecuteContext executeContext) {
         return null;
     }
+
+    @Override
+    public boolean stop(ExecuteContext executeContext) {
+        return true;
+    }
 }

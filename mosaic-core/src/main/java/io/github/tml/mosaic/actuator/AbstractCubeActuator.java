@@ -61,6 +61,4 @@ public abstract class AbstractCubeActuator implements CubeActuator{
         }
     }
 
-
-
 }
