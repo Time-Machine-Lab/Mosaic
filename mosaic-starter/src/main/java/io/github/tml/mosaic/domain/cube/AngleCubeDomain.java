@@ -44,26 +44,13 @@ public class AngleCubeDomain {
 
     private final Map<String, AngleCubeDTO> angleCubeMap = new ConcurrentHashMap<>();
 
+
     /**
-     * 验证是否为有效的Angel Cube
+     * 构建天使方块
+     * @param cubeId 方块id
+     * @return 天使方块DTO
      */
-    private AngleCubeDTO validateAndGetAngelCube(String cubeId) {
-
-        if (angleCubeMap.containsKey(cubeId)) {
-            return angleCubeMap.get(cubeId);
-        }
-        // 检查Cube是否存在
-        AngleCubeDTO cube = createAngleCube(cubeId);
-
-        // 检查是否为angle类型
-        if (!CubeModelType.ANGLE_TYPE.equals(cube.getModel())) {
-            throw new IllegalArgumentException("cube {} is not angel cube type" + cube.getId());
-        }
-
-        return cube;
-    }
-
-    public AngleCubeDTO createAngleCube(String cubeId) {
+    public AngleCubeDTO toAngleCube(String cubeId) {
 
         Optional<CubeDTO> cubeOpt = cubeDomain.getCubeById(cubeId);
         cubeOpt.orElseThrow(()->CubeException.cubeNotExistException(cubeId));
@@ -156,6 +143,25 @@ public class AngleCubeDomain {
         }
         angleCubeSlotMap.put(cubeId, slotId);
         return slotId;
+    }
+
+    /**
+     * 验证是否为有效的Angel Cube
+     */
+    private AngleCubeDTO validateAndGetAngelCube(String cubeId) {
+
+        if (angleCubeMap.containsKey(cubeId)) {
+            return angleCubeMap.get(cubeId);
+        }
+        // 检查Cube是否存在
+        AngleCubeDTO cube = toAngleCube(cubeId);
+
+        // 检查是否为angle类型
+        if (!CubeModelType.ANGLE_TYPE.equals(cube.getModel())) {
+            throw new IllegalArgumentException("cube {} is not angel cube type" + cube.getId());
+        }
+
+        return cube;
     }
 
 
