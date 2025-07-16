@@ -6,7 +6,7 @@
 
     <groupId>io.github.tml</groupId>
     <artifactId>mosaic-test-plugin</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.5-beta</version>
 
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -18,7 +18,7 @@
         <dependency>
             <groupId>io.github.timemachinelab</groupId>
             <artifactId>mosaic-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.5-beta</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

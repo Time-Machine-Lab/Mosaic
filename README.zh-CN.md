@@ -52,6 +52,6 @@
 <dependency>
     <groupId>io.github.tml</groupId>
     <artifactId>mosaic-starter</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.5-beta</version>
 </dependency>
 ```
