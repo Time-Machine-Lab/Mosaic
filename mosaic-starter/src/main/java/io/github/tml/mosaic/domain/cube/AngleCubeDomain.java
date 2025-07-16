@@ -1,12 +1,21 @@
 package io.github.tml.mosaic.domain.cube;
 
 import io.github.tml.mosaic.actuator.CubeActuatorProxy;
+import io.github.tml.mosaic.core.execption.CubeException;
+import io.github.tml.mosaic.core.execption.SlotException;
 import io.github.tml.mosaic.core.tools.guid.DotNotationId;
+import io.github.tml.mosaic.core.tools.guid.GUUID;
 import io.github.tml.mosaic.cube.constant.CubeModelType;
+import io.github.tml.mosaic.domain.slot.SlotDomain;
+import io.github.tml.mosaic.entity.dto.AngleCubeDTO;
 import io.github.tml.mosaic.entity.dto.CubeDTO;
+import io.github.tml.mosaic.entity.dto.SlotDTO;
+import io.github.tml.mosaic.entity.dto.SlotSetupDTO;
 import io.github.tml.mosaic.entity.req.AngelCubeStatusUpdateReq;
+import io.github.tml.mosaic.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +23,8 @@ import java.security.SecureRandom;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static io.github.tml.mosaic.util.RandomUtil.generateSecureRandomCode;
 
 @Slf4j
 @Component
@@ -23,71 +34,132 @@ public class AngleCubeDomain {
     private CubeDomain cubeDomain;
 
     @Autowired
+    private SlotDomain slotDomain;
+
+    @Autowired
     private CubeActuatorProxy cubeActuatorProxy;
 
     // 存放anglecube对应的槽id
     private final Map<String, String> angleCubeSlotMap = new ConcurrentHashMap<>();
 
+    private final Map<String, AngleCubeDTO> angleCubeMap = new ConcurrentHashMap<>();
+
     /**
      * 验证是否为有效的Angel Cube
      */
-    private CubeDTO validateAndGetAngelCube(String cubeId) {
-        // 检查Cube是否存在
-        Optional<CubeDTO> cubeOpt = cubeDomain.getCubeById(cubeId);
+    private AngleCubeDTO validateAndGetAngelCube(String cubeId) {
 
-        cubeOpt.orElseThrow(()->new IllegalArgumentException("cube not exist，ID: " + cubeId));
-        CubeDTO cube = cubeOpt.get();
+        if (angleCubeMap.containsKey(cubeId)) {
+            return angleCubeMap.get(cubeId);
+        }
+        // 检查Cube是否存在
+        AngleCubeDTO cube = createAngleCube(cubeId);
 
         // 检查是否为angle类型
         if (!CubeModelType.ANGLE_TYPE.equals(cube.getModel())) {
-            throw new IllegalArgumentException("只有angle类型的Cube才支持状态管理，当前类型: " + cube.getModel());
+            throw new IllegalArgumentException("cube {} is not angel cube type" + cube.getId());
         }
 
-        log.debug("Angel Cube validation passed for ID: {}", cubeId);
         return cube;
     }
 
+    public AngleCubeDTO createAngleCube(String cubeId) {
+
+        Optional<CubeDTO> cubeOpt = cubeDomain.getCubeById(cubeId);
+        cubeOpt.orElseThrow(()->CubeException.cubeNotExistException(cubeId));
+
+        CubeDTO cube = cubeOpt.get();
+        AngleCubeDTO angleCubeDTO = new AngleCubeDTO();
+        BeanUtils.copyProperties(cube, angleCubeDTO);
+
+        angleCubeMap.put(cubeId, angleCubeDTO);
+
+        return angleCubeDTO;
+    }
+
     /**
-     * 更新Angel Cube状态
-     * @param cubeId Cube标识
-     * @param action 执行动作
-     * @return 操作结果
+     * 暂停天使方块
+     * @param cubeId 方块id
+     * @return 是否暂停成功
+     * @throws Exception
      */
-    public boolean updateAngelCubeStatus(String cubeId, AngelCubeStatusUpdateReq.AngelCubeAction action) {
-        log.debug("Domain: Updating Angel Cube status for ID: {} with action: {}", cubeId, action);
-
+    public boolean stopAngleCube(String cubeId) throws Exception{
         try {
-            // 1. 验证Cube是否存在且为function类型
-            CubeDTO cube = validateAndGetAngelCube(cubeId);
-            String slotId;
-            if (StringUtils.isBlank(slotId = angleCubeSlotMap.get(cubeId))) {
+            AngleCubeDTO cube = validateAndGetAngelCube(cubeId);
+            if (cube.isEnable()) {
+                String slotId = angleCubeSlotMap.get(cubeId);
+                if(StringUtils.isBlank(slotId)){
+                    log.error("angle cube {} dont have running slot", cubeId);
+                    cube.disable();
+                    return true;
+                }
 
-                slotId = angleCubeSlotMap.get(cubeId);
+                boolean stop = cubeActuatorProxy.stop(new DotNotationId(slotId));
+                cube.disable();
+                return stop;
+            }else{
+                throw new CubeException(String.format("cube %s is not enable", cubeId));
             }
-            cubeActuatorProxy.execute(new DotNotationId(slotId));
-            return true;
-
-        } catch (Exception e) {
-            log.error("Domain: Failed to update Angel Cube status for ID: {}", cubeId, e);
-            throw new RuntimeException("更新Angel Cube状态失败: " + e.getMessage(), e);
+        }catch (Exception e){
+            log.error("try to stop angle cube error: {}", cubeId, e);
+            throw new CubeException("try to stop angle cube error", e);
         }
     }
 
-    private static String generateSecureRandomCode(int length) {
-        String chars = "abcdefghijklmnopqrstuvwxyz0123456789";
-        SecureRandom random = new SecureRandom();
-        StringBuilder sb = new StringBuilder();
-
-        for (int i = 0; i < length; i++) {
-            int index = random.nextInt(chars.length());
-            sb.append(chars.charAt(index));
+    /**
+     * 启动天使方块
+     * @param cubeId 天使方块id
+     * @return 是否启动成功
+     * @throws Exception 启动失败原因
+     */
+    public boolean executeAngleCube(String cubeId) throws Exception{
+        try {
+            AngleCubeDTO cube = validateAndGetAngelCube(cubeId);
+            String slotId;
+            // 如果天使方块从未执行过，则需要为其分配一个运行槽
+            if (StringUtils.isBlank(slotId = angleCubeSlotMap.get(cubeId))) {
+                slotId = createAngleCubeSlot(cubeId);
+                if(StringUtils.isBlank(slotId)){
+                    throw SlotException.CREATE_SLOT_FAILED;
+                }
+                angleCubeSlotMap.put(cubeId, slotId);
+            }
+            if (!cube.isEnable()) {
+                cubeActuatorProxy.execute(new DotNotationId(slotId));
+                cube.enable();
+                return true;
+            }
+            throw new RuntimeException(String.format("angle cube %s is enable", cubeId));
+        }catch (Exception e){
+            log.error("try to start angle cube error: {}", cubeId, e);
+            throw new CubeException("try to start angle cube error", e);
         }
+    }
 
-        return sb.toString();
+    /**
+     * 创建天使方块安装槽
+     * @param cubeId 方块id
+     * @return 槽id
+     */
+    public String createAngleCubeSlot(String cubeId) {
+        String slotId = buildAngelCubeSlotId(cubeId);
+        Optional<SlotDTO> slotOptional = slotDomain.createSlot(slotId);
+        if (slotOptional.isEmpty()) {
+            return null;
+        }
+        // 安装槽信息
+        SlotSetupDTO setupDTO = new SlotSetupDTO();
+        setupDTO.setSlotId(slotId);
+        setupDTO.setCubeId(new GUUID(cubeId));
+        if (!slotDomain.setupSlot(setupDTO)) {
+            return null;
+        }
+        angleCubeSlotMap.put(cubeId, slotId);
+        return slotId;
     }
 
 
     private String buildAngelCubeSlotId(String cubeId) {
-        return cubeId+".slot."+ generateSecureRandomCode(6);
+        return cubeId+".slot."+ RandomUtil.generateSecureRandomCode(6);
     }
 }

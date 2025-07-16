@@ -31,4 +31,8 @@ public class CubeException extends RuntimeException{
     {
         super(message,cause);
     }
+
+    public static CubeException cubeNotExistException(String cubeId){
+        return new CubeException("cubeId:"+cubeId+"not exist");
+    }
 }

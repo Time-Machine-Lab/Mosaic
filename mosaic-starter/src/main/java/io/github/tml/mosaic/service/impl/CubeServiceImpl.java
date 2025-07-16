@@ -1,6 +1,7 @@
 package io.github.tml.mosaic.service.impl;
 
 import io.github.tml.mosaic.convert.CubeConvert;
+import io.github.tml.mosaic.domain.cube.AngleCubeDomain;
 import io.github.tml.mosaic.domain.cube.CubeDomain;
 import io.github.tml.mosaic.entity.dto.CubeDTO;
 import io.github.tml.mosaic.entity.req.AngelCubeStatusUpdateReq;
@@ -24,6 +25,8 @@ import java.util.Map;
 public class CubeServiceImpl implements CubeService {
 
     private final CubeDomain cubeDomain;
+
+    private final AngleCubeDomain angleCubeDomain;
 
     @Override
     public R<?> getCubeList() {
@@ -80,27 +83,23 @@ public class CubeServiceImpl implements CubeService {
         ));
     }
 
+    //TODO waiting for twj
     @Override
     public R<?> updateAngelCubeStatus(AngelCubeStatusUpdateReq statusReq) {
         String cubeId = statusReq.getCubeId();
         AngelCubeStatusUpdateReq.AngelCubeAction action = statusReq.getAction();
 
-        log.debug("Service: Updating Angel Cube status for ID: {} with action: {}", cubeId, action);
-
-        try {
-
-            Map<String, Object> result = Map.of(
-                    "cubeId", cubeId,
-                    "timestamp", java.time.LocalDateTime.now()
-            );
-
-            return R.success(result);
-        } catch (IllegalArgumentException e) {
-            log.warn("Service: Invalid Angel Cube status update request for ID: {}", cubeId, e);
-            return R.error(e.getMessage());
-        } catch (Exception e) {
-            log.error("Service: Failed to update Angel Cube status for ID: {}", cubeId, e);
-            return R.error("update angel cube running status fail: " + e.getMessage());
+        try{
+            if (AngelCubeStatusUpdateReq.AngelCubeAction.START.equals(action)) {
+                boolean isExecute = angleCubeDomain.executeAngleCube(cubeId);
+            }
+            if (AngelCubeStatusUpdateReq.AngelCubeAction.STOP.equals(action)) {
+                boolean isStop = angleCubeDomain.stopAngleCube(cubeId);
+            }
+        }catch (Exception e){
+            String errorMessage = e.getMessage();
+            log.error("Service: Failed to update Angel Cube status for ID: {} with action: {}. Error: {}", cubeId, action, errorMessage);
         }
+        return R.error();
     }
 }
