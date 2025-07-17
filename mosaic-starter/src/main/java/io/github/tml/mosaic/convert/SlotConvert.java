@@ -9,6 +9,8 @@ import io.github.tml.mosaic.entity.vo.slot.SlotVO;
 import io.github.tml.mosaic.slot.Slot;
 import org.springframework.beans.BeanUtils;
 
+import java.util.Optional;
+
 public class SlotConvert {
 
     public static SlotDTO convert2DTO(Slot slot) {
@@ -26,8 +28,9 @@ public class SlotConvert {
         if(setupCubeInfo!=null){
             BeanUtils.copyProperties(setupCubeInfo, slotVO);
             slotVO.setCubeId(setupCubeInfo.getCubeId().toString());
-            slotVO.setExPointId(setupCubeInfo.getExPointId().toString());
-            slotVO.setExPackageId(setupCubeInfo.getExPackageId().toString());
+
+            slotVO.setExPointId(Optional.ofNullable(setupCubeInfo.getExPointId()).map(Object::toString).orElse(""));
+            slotVO.setExPackageId(Optional.ofNullable(setupCubeInfo.getExPackageId()).map(Object::toString).orElse(""));
         }
         return slotVO;
     }
