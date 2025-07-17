@@ -83,6 +83,10 @@ public class CubeActuatorProxy {
         Cube cube = Optional.ofNullable(context.getCube(cubeId, setupCubeInfo.getConfigId()))
                 .orElseThrow(()->new ActuatorException(String.format("cube not found :%s", executeInfoLog(cubeId, null, null))));
 
+        if (cube.isAngleCube()) {
+            return new CubeActuator.ExecuteContext(slot, cube.getMosaicCube(), cube.isAngleCube(), null, null, args);
+        }
+
         ExtensionPackage exPackage = Optional.ofNullable(cube.findExPackage(exPackageId))
                 .orElseThrow(() -> new ActuatorException(String.format("exPackage not found : %s"
                         , executeInfoLog(cubeId, exPackageId, null))));
@@ -92,7 +96,9 @@ public class CubeActuatorProxy {
                         , executeInfoLog(cubeId, exPackageId, exPointId))));
 
         ExtPointResult returnResult = exPoint.getReturnResult();
+
         String resName = slot.getSetupCubeInfo().getResName();
+
         if (!returnResult.containsResultItem(resName)) {
             throw new ActuatorException(String.format("resName %s not found : %s", resName, executeInfoLog(cubeId, exPackageId, exPointId)));
         }
