@@ -1,9 +1,11 @@
 package io.github.tml.mosaic.convert;
 
 import io.github.tml.mosaic.cube.factory.definition.CubeDefinition;
+import io.github.tml.mosaic.entity.dto.AngleCubeDTO;
 import io.github.tml.mosaic.entity.dto.CubeDTO;
 import io.github.tml.mosaic.entity.dto.CubeOverviewDTO;
 import io.github.tml.mosaic.entity.vo.cube.*;
+import org.springframework.beans.BeanUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -42,6 +44,16 @@ public class CubeConvert {
         return cubeDTO;
     }
 
+    public static AngleCubeDTO convert2AngleDTO(CubeDefinition definition){
+        CubeDTO cubeDTO = convert2DTO(definition);
+        if(cubeDTO == null){
+            return null;
+        }
+        AngleCubeDTO angleCubeDTO = new AngleCubeDTO();
+        BeanUtils.copyProperties(cubeDTO, angleCubeDTO);
+        return angleCubeDTO;
+    }
+
     /**
      * CubeDTO -> CubeInfoVO (应用层转换)
      */
@@ -58,7 +70,6 @@ public class CubeConvert {
                 .model(cubeDTO.getModel())
                 .scope(cubeDTO.getScope())
                 .className(cubeDTO.getClassName())
-                .status(convertStatus(cubeDTO.getStatus()))
                 .extensionPackages(cubeDTO.getExtensionPackages().stream()
                         .map(ExtensionPackageVO::fromDefinition)
                         .collect(Collectors.toList()))
@@ -67,6 +78,21 @@ public class CubeConvert {
                 .registeredTime(cubeDTO.getRegisteredTime())
                 .lastUpdatedTime(cubeDTO.getLastUpdatedTime())
                 .build();
+    }
+
+    /**
+     * AngleCubeDTO -> CubeInfoVo
+     * @param angleCubeDTO 天使方块
+     * @return
+     */
+    public static CubeInfoVO angleConvert2VO(AngleCubeDTO angleCubeDTO){
+        CubeInfoVO cubeInfoVO = convert2VO(angleCubeDTO);
+        if(cubeInfoVO == null){
+            return null;
+        }
+
+        cubeInfoVO.setStatus(angleCubeDTO.getCubeStatus());
+        return cubeInfoVO;
     }
 
     /**
@@ -81,6 +107,20 @@ public class CubeConvert {
                 .map(CubeConvert::convert2VO)
                 .collect(Collectors.toList());
     }
+
+    /**
+     * 批量转换 CubeDTO -> CubeInfoVO
+     */
+    public static List<CubeInfoVO> angleConvert2VOs(List<AngleCubeDTO> cubeDTOs) {
+        if (cubeDTOs == null || cubeDTOs.isEmpty()) {
+            return List.of();
+        }
+
+        return cubeDTOs.stream()
+                .map(CubeConvert::angleConvert2VO)
+                .collect(Collectors.toList());
+    }
+
 
     /**
      * 生成概览DTO
@@ -113,12 +153,6 @@ public class CubeConvert {
                 .totalExtensionPoints(totalExtensionPoints)
                 .cubesByModel(cubesByModel)
                 .build();
-    }
-
-    // ========== 私有辅助方法 ==========
-
-    private static CubeStatus convertStatus(CubeStatus status) {
-        return CubeStatus.valueOf(status.name());
     }
 
     private static CubeOverviewDTO buildEmptyOverviewDTO() {

@@ -1,6 +1,7 @@
 package io.github.tml.mosaic.cube.factory.definition;
 
 import io.github.tml.mosaic.core.tools.param.ConfigInfo;
+import io.github.tml.mosaic.cube.constant.CubeModelType;
 import io.github.tml.mosaic.install.domian.info.CubeListenerInfo;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -50,5 +51,10 @@ public class CubeDefinition {
 
     public void addCubeListener(CubeListenerDefinition listener) {
         cubeListeners.add(listener);
+    }
+
+
+    public boolean isAngleCube(){
+        return CubeModelType.ANGLE_TYPE.equals(this.getModel());
     }
 }

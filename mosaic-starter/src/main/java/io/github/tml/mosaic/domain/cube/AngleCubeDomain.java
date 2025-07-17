@@ -1,17 +1,21 @@
 package io.github.tml.mosaic.domain.cube;
 
 import io.github.tml.mosaic.actuator.CubeActuatorProxy;
+import io.github.tml.mosaic.convert.CubeConvert;
 import io.github.tml.mosaic.core.execption.CubeException;
 import io.github.tml.mosaic.core.execption.SlotException;
 import io.github.tml.mosaic.core.tools.guid.DotNotationId;
 import io.github.tml.mosaic.core.tools.guid.GUUID;
 import io.github.tml.mosaic.cube.constant.CubeModelType;
+import io.github.tml.mosaic.cube.factory.context.CubeContext;
+import io.github.tml.mosaic.cube.factory.definition.CubeDefinition;
 import io.github.tml.mosaic.domain.slot.SlotDomain;
 import io.github.tml.mosaic.entity.dto.AngleCubeDTO;
 import io.github.tml.mosaic.entity.dto.CubeDTO;
 import io.github.tml.mosaic.entity.dto.SlotDTO;
 import io.github.tml.mosaic.entity.dto.SlotSetupDTO;
 import io.github.tml.mosaic.entity.req.AngelCubeStatusUpdateReq;
+import io.github.tml.mosaic.entity.vo.cube.CubeStatus;
 import io.github.tml.mosaic.util.RandomUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -20,9 +24,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.security.SecureRandom;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static io.github.tml.mosaic.util.RandomUtil.generateSecureRandomCode;
 
@@ -37,6 +41,9 @@ public class AngleCubeDomain {
     private SlotDomain slotDomain;
 
     @Autowired
+    private CubeContext cubeContext;
+
+    @Autowired
     private CubeActuatorProxy cubeActuatorProxy;
 
     // 存放anglecube对应的槽id
@@ -45,6 +52,25 @@ public class AngleCubeDomain {
     private final Map<String, AngleCubeDTO> angleCubeMap = new ConcurrentHashMap<>();
 
 
+    /**
+     * 获取所有Cube列表
+     */
+    public List<AngleCubeDTO> getCubeList() {
+        List<CubeDefinition> cubeDefinitions = cubeContext.getAllCubeDefinitions();
+
+        return cubeDefinitions.stream()
+                .filter(CubeDefinition::isAngleCube)
+                .map(CubeConvert::convert2AngleDTO)
+                .filter(Objects::nonNull)
+                .peek(cubeDTO -> {
+                    AngleCubeDTO angleCubeDTO = angleCubeMap.get(cubeDTO.getId());
+                    cubeDTO.setEnable(Optional.ofNullable(angleCubeDTO)
+                            .map(AngleCubeDTO::isEnable)
+                            .orElse(AngleCubeDTO.DISABLE));
+                })
+                .sorted(Comparator.comparing(CubeDTO::getId))
+                .collect(Collectors.toList());
+    }
     /**
      * 构建天使方块
      * @param cubeId 方块id
@@ -157,7 +183,7 @@ public class AngleCubeDomain {
         AngleCubeDTO cube = toAngleCube(cubeId);
 
         // 检查是否为angle类型
-        if (!CubeModelType.ANGLE_TYPE.equals(cube.getModel())) {
+        if (!cube.isAngleCube()) {
             throw new IllegalArgumentException("cube {} is not angel cube type" + cube.getId());
         }
 
