@@ -1,5 +1,6 @@
 package io.github.tml.mosaic.entity.dto;
 
+import io.github.tml.mosaic.cube.constant.CubeModelType;
 import io.github.tml.mosaic.cube.factory.definition.CubeDefinition;
 import io.github.tml.mosaic.entity.vo.cube.CubeStatus;
 import lombok.Data;
@@ -17,7 +18,6 @@ import java.util.Objects;
 @NoArgsConstructor
 public class CubeDTO extends CubeDefinition {
 
-    private CubeStatus status;
     private LocalDateTime registeredTime;
     private LocalDateTime lastUpdatedTime;
 
@@ -25,7 +25,6 @@ public class CubeDTO extends CubeDefinition {
                    String description, String model, String scope,
                    String className, ClassLoader classLoader) {
         super(id, name, version, description, model, scope, className, classLoader);
-        status = CubeStatus.INACTIVE;
         this.registeredTime = LocalDateTime.now();
         this.lastUpdatedTime = LocalDateTime.now();
     }
@@ -48,4 +47,5 @@ public class CubeDTO extends CubeDefinition {
                 .mapToInt(pkg -> pkg.getExtensionPoints().size())
                 .sum();
     }
+
 }

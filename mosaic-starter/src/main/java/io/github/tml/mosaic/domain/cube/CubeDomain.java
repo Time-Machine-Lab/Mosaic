@@ -29,11 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.nio.file.Path;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -48,26 +44,19 @@ public class CubeDomain {
     private final CubeContext cubeContext;
     private final InfoContextInstaller installer;
 
-    // 存储Angel Cube的运行状态，默认为INACTIVE
-    private final Map<String, CubeStatus> angelCubeStatusMap = new ConcurrentHashMap<>();
 
     /**
      * 获取所有Cube列表
      */
     public List<CubeDTO> getCubeList() {
-        log.debug("Domain: Fetching all cube definitions");
-
         List<CubeDefinition> cubeDefinitions = cubeContext.getAllCubeDefinitions();
-        List<CubeDTO> result = cubeDefinitions.stream()
+
+        return cubeDefinitions.stream()
+                .filter(cubeDefinition -> !cubeDefinition.isAngleCube())
                 .map(CubeConvert::convert2DTO)
-                .peek(cubeDTO -> {
-                    cubeDTO.setStatus(angelCubeStatusMap.getOrDefault(cubeDTO.getId(), CubeStatus.INACTIVE));
-                })
+                .filter(Objects::nonNull)
                 .sorted(Comparator.comparing(CubeDTO::getId))
                 .collect(Collectors.toList());
-
-        log.info("Domain: Successfully retrieved {} cube definitions", result.size());
-        return result;
     }
 
     /**

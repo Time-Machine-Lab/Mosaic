@@ -3,6 +3,7 @@ package io.github.tml.mosaic.service.impl;
 import io.github.tml.mosaic.convert.CubeConvert;
 import io.github.tml.mosaic.domain.cube.AngleCubeDomain;
 import io.github.tml.mosaic.domain.cube.CubeDomain;
+import io.github.tml.mosaic.entity.dto.AngleCubeDTO;
 import io.github.tml.mosaic.entity.dto.CubeDTO;
 import io.github.tml.mosaic.entity.req.AngelCubeStatusUpdateReq;
 import io.github.tml.mosaic.entity.req.CubeFilterReq;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -31,8 +33,12 @@ public class CubeServiceImpl implements CubeService {
     @Override
     public R<?> getCubeList() {
         List<CubeDTO> cubeList = cubeDomain.getCubeList();
-        List<CubeInfoVO> cubeVOs = CubeConvert.convert2VOs(cubeList);
-        
+        List<AngleCubeDTO> angleCubeList = angleCubeDomain.getCubeList();
+
+        List<CubeInfoVO> cubeVOs = new ArrayList<>();
+        cubeVOs.addAll(CubeConvert.convert2VOs(cubeList));
+        cubeVOs.addAll(CubeConvert.angleConvert2VOs(angleCubeList));
+
         return R.success(Map.of(
                 "cubeList", cubeVOs,
                 "total", cubeVOs.size()
