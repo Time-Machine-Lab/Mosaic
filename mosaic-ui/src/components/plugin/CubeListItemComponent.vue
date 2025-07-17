@@ -1120,7 +1120,7 @@ $radius-tiny: 8px;            // 微小圆角
   border-top: 2px solid rgba(230, 211, 163, 0.5) !important;
   padding: 2.8rem 2.2rem !important;
   border-radius: 0 0 $radius-large $radius-large;
-  min-height: 220px;
+  min-height: 230px;
   display: flex;
   align-items: center;
   justify-content: space-between;
