@@ -1,12 +1,13 @@
 <script lang="ts" setup>
 import { defineProps, ref, onMounted, computed } from "vue";
-import { type Cube,AngelCubeStatusUpdateReq } from "../../api/plugin/pluginType";
+import { type Cube, AngelCubeStatusUpdateReq } from "../../api/plugin/pluginType";
 import { updateAngelCubeStatus } from '../../api/plugin/pluginApi'
 import totemIconUrl from '../../assets/icons/minecraft-totem3.png?url'
 import grassIconUrl from '../../assets/icons/minecraft-grass.svg?url'
+// 如果使用了消息组件，请导入
+// import { ElMessage } from 'element-plus'
 
-import MCLeverSwitch from './MCLeverSwitch.vue' // 引入拉杆组件
-
+import MCLeverSwitch from './MCLeverSwitch.vue'
 
 const dialog = ref(false)
 const isHovered = ref(false)
@@ -14,6 +15,8 @@ const configDialog = ref(false)
 
 // 添加状态相关的响应式数据
 const isUpdatingStatus = ref(false)
+const statusUpdateError = ref<string>('')
+const showStatusError = ref(false)
 
 const props = defineProps({
   cube: {
@@ -22,26 +25,79 @@ const props = defineProps({
   }
 })
 
-// 添加状态切换方法
+// 修改状态切换方法
 const handleStatusToggle = async (cube: Cube) => {
   if (cube.model !== 'angle') return // 只有 Angel Cube 可以切换状态
 
   isUpdatingStatus.value = true
+  statusUpdateError.value = ''
+  showStatusError.value = false
+
   try {
-    const action = cube.status === 'ACTIVE' ? 'STOP' : 'START'
-    await updateAngelCubeStatus(cube.id, action)
+    const currentStatus = cube.status
+    const action = currentStatus === 'ACTIVE' ? 'STOP' : 'START'
 
-    // 更新本地状态
-    cube.status = cube.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
+    console.log(`尝试${action === 'START' ? '启动' : '停止'} Angel Cube: ${cube.id}`)
 
-    // 可以添加成功提示
-    // ElMessage.success(`${action === 'START' ? '启动' : '停止'}成功`)
-  } catch (error) {
-    console.error('状态更新失败:', error)
-    // ElMessage.error('状态更新失败')
+    const response = await updateAngelCubeStatus(cube.id, action)
+
+    // 检查响应是否成功
+    if (response.code === 200 && response.data?.success) {
+      // 操作成功，更新本地状态
+      cube.status = response.data.newStatus
+
+      // 显示成功消息（根据你使用的UI库调整）
+      console.log('✅ 状态更新成功:', response.data.message)
+      // ElMessage.success(response.data.message) // 如果使用 Element Plus
+
+      // 可以添加成功提示的其他方式
+      showSuccessNotification(response.data.message)
+
+    } else {
+      // 操作失败
+      const errorMsg = response.message || '状态更新失败'
+      statusUpdateError.value = errorMsg
+      showStatusError.value = true
+
+      console.error('❌ 状态更新失败:', errorMsg)
+      // ElMessage.error(errorMsg) // 如果使用 Element Plus
+
+      showErrorNotification(errorMsg)
+    }
+
+  } catch (error: any) {
+    // 网络错误或其他异常
+    const errorMessage = error?.response?.data?.message || error?.message || '网络错误，请重试'
+    statusUpdateError.value = errorMessage
+    showStatusError.value = true
+
+    console.error('❌ 状态更新异常:', error)
+    // ElMessage.error(errorMessage) // 如果使用 Element Plus
+
+    showErrorNotification(errorMessage)
   } finally {
     isUpdatingStatus.value = false
+
+    // 3秒后隐藏错误提示
+    if (showStatusError.value) {
+      setTimeout(() => {
+        showStatusError.value = false
+      }, 3000)
+    }
   }
+}
+
+// 成功提示函数（根据你的UI框架调整）
+const showSuccessNotification = (message: string) => {
+  // 这里可以实现你自己的成功提示逻辑
+  // 比如使用 Vuetify 的 snackbar 或其他组件
+  console.log('🎉', message)
+}
+
+// 错误提示函数（根据你的UI框架调整）
+const showErrorNotification = (message: string) => {
+  // 这里可以实现你自己的错误提示逻辑
+  console.error('💥', message)
 }
 
 // 计算属性：格式化内存使用量
@@ -65,8 +121,8 @@ const modelClass = computed(() => {
 // 获取模式图标
 const getModelIcon = (model: string) => {
   const iconMap = {
-    angle: 'minecraft-totem', // 使用自定义标识
-    default: 'minecraft-grass', // 使用自定义标识
+    angle: 'minecraft-totem',
+    default: 'minecraft-grass',
   }
   return iconMap[model as keyof typeof iconMap] || 'mdi-package-variant'
 }
@@ -95,6 +151,17 @@ onMounted(() => {
         @mouseleave="isHovered = false"
         elevation="0"
     >
+      <!-- 错误提示横幅 -->
+      <v-alert
+          v-if="showStatusError"
+          type="error"
+          class="status-error-alert"
+          closable
+          @click:close="showStatusError = false"
+      >
+        <strong>状态更新失败:</strong> {{ statusUpdateError }}
+      </v-alert>
+
       <!-- 简化呼吸光环 -->
       <div
           v-if="statusClass === 'active'"
@@ -106,7 +173,6 @@ onMounted(() => {
 
       <!-- 卡片头部 -->
       <template v-slot:title>
-        <!-- 保持原有头部内容 -->
         <div class="cube-header">
           <div class="cube-icon-wrapper">
             <img
@@ -131,7 +197,16 @@ onMounted(() => {
                 size="36"
             />
             <div class="status-badge" :class="`status-badge--${statusClass}`">
+              <!-- 显示加载状态或正常状态图标 -->
+              <v-progress-circular
+                  v-if="isUpdatingStatus"
+                  indeterminate
+                  size="20"
+                  width="2"
+                  color="white"
+              ></v-progress-circular>
               <v-icon
+                  v-else
                   :icon="getStatusIcon(props.cube.status)"
                   size="24"
               ></v-icon>
@@ -179,7 +254,6 @@ onMounted(() => {
 
       <!-- 卡片内容 -->
       <template v-slot:text>
-        <!-- 保持原有内容 -->
         <div class="cube-content">
           <p class="cube-description">{{ props.cube.description }}</p>
 
@@ -253,6 +327,7 @@ onMounted(() => {
               v-if="props.cube.model === 'angle'"
               :status="props.cube.status"
               :is-loading="isUpdatingStatus"
+              :disabled="isUpdatingStatus"
               @toggle="handleStatusToggle(props.cube)"
           />
         </div>
@@ -298,6 +373,31 @@ $radius-tiny: 8px;            // 微小圆角
 .cube-card-container {
   margin-bottom: 1.5rem;
   position: relative;
+}
+
+.status-error-alert {
+  margin: 1rem;
+  border-radius: 12px !important;
+  font-weight: 500;
+}
+
+// 加载状态下的状态徽章样式
+.status-badge {
+  &--loading {
+    background: linear-gradient(135deg, #ff9800, #f57c00) !important;
+
+    .v-progress-circular {
+      color: white !important;
+    }
+  }
+}
+
+// 禁用状态下的拉杆样式
+.center-lever-area {
+  &--disabled {
+    opacity: 0.7;
+    pointer-events: none;
+  }
 }
 
 .desert-cube-card {

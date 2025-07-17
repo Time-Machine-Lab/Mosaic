@@ -92,7 +92,7 @@ export function cloneCubeConfiguration(form: any){
     })
 }
 
-// 添加这个函数到 pluginApi.ts
+// 修改现有的函数，增加错误处理
 export function updateAngelCubeStatus(cubeId: string, action: 'START' | 'STOP') {
     return request({
         url: '/cube/angel/updateStatus',
@@ -100,6 +100,7 @@ export function updateAngelCubeStatus(cubeId: string, action: 'START' | 'STOP') 
         data: {
             cubeId: cubeId,
             action: action
-        }
+        },
+        timeout: 30000 // 增加超时时间，因为启动/停止可能需要时间
     })
 }

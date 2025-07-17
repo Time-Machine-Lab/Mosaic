@@ -83,23 +83,52 @@ public class CubeServiceImpl implements CubeService {
         ));
     }
 
-    //TODO waiting for twj
     @Override
     public R<?> updateAngelCubeStatus(AngelCubeStatusUpdateReq statusReq) {
         String cubeId = statusReq.getCubeId();
         AngelCubeStatusUpdateReq.AngelCubeAction action = statusReq.getAction();
 
-        try{
+        log.debug("Service: Updating Angel Cube status for ID: {} with action: {}", cubeId, action);
+
+        try {
+            boolean operationSuccess = false;
+            String resultMessage = "";
+
             if (AngelCubeStatusUpdateReq.AngelCubeAction.START.equals(action)) {
-                boolean isExecute = angleCubeDomain.executeAngleCube(cubeId);
+                operationSuccess = angleCubeDomain.executeAngleCube(cubeId);
+                resultMessage = operationSuccess ? "Angel Cube 启动成功" : "Angel Cube 启动失败";
+            } else if (AngelCubeStatusUpdateReq.AngelCubeAction.STOP.equals(action)) {
+                operationSuccess = angleCubeDomain.stopAngleCube(cubeId);
+                resultMessage = operationSuccess ? "Angel Cube 停止成功" : "Angel Cube 停止失败";
             }
-            if (AngelCubeStatusUpdateReq.AngelCubeAction.STOP.equals(action)) {
-                boolean isStop = angleCubeDomain.stopAngleCube(cubeId);
+
+            if (operationSuccess) {
+                // 操作成功，返回更新后的状态信息
+                Map<String, Object> result = Map.of(
+                        "cubeId", cubeId,
+                        "action", action.name(),
+                        "actionDescription", action.getDescription(),
+                        "success", true,
+                        "message", resultMessage,
+                        "newStatus", action.equals(AngelCubeStatusUpdateReq.AngelCubeAction.START) ? "ACTIVE" : "INACTIVE",
+                        "timestamp", System.currentTimeMillis()
+                );
+
+                log.info("Service: Angel Cube status updated successfully for ID: {} with action: {}", cubeId, action);
+                return R.success(resultMessage, result);
+            } else {
+                // 操作失败
+                log.warn("Service: Angel Cube status update failed for ID: {} with action: {}", cubeId, action);
+                return R.error(resultMessage);
             }
-        }catch (Exception e){
+
+        } catch (IllegalArgumentException e) {
+            log.warn("Service: Invalid Angel Cube status update request for ID: {}", cubeId, e);
+            return R.error("参数错误: " + e.getMessage());
+        } catch (Exception e) {
             String errorMessage = e.getMessage();
             log.error("Service: Failed to update Angel Cube status for ID: {} with action: {}. Error: {}", cubeId, action, errorMessage);
+            return R.error("更新 Angel Cube 状态失败: " + errorMessage);
         }
-        return R.error();
     }
 }
