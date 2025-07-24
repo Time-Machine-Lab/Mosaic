@@ -17,14 +17,14 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @description :
  * @date 2025/6/28
  */
-@Configuration
+
 public class MosaicPersistenceConfig {
 
-    @Bean
-    @ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
-    public RedisAdapter springRedisAdapter(Object redisTemplate) {
-        return new SpringRedisAdapter((RedisTemplate<String, String>) redisTemplate);
-    }
+//    @Bean
+//    @ConditionalOnClass(name = "org.springframework.data.redis.core.RedisTemplate")
+//    public RedisAdapter springRedisAdapter(Object redisTemplate) {
+//        return new SpringRedisAdapter((RedisTemplate<String, String>) redisTemplate);
+//    }
 
 //    @Bean
 //    @ConditionalOnClass(name = "redis.clients.jedis.Jedis")
