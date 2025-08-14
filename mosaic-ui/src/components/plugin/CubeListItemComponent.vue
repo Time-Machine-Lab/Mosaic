@@ -420,14 +420,14 @@ $radius-tiny: 8px;            // 微小圆角
   transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 
   // 多层立体阴影系统
-  box-shadow:
-      0 20px 60px rgba(139, 115, 85, 0.12),
-      0 12px 35px rgba(139, 115, 85, 0.08),
-      0 6px 18px rgba(139, 115, 85, 0.06),
-      0 2px 8px rgba(139, 115, 85, 0.04),
-      inset 0 2px 0 rgba(255, 255, 255, 0.25),
-      inset 0 -2px 0 rgba(139, 115, 85, 0.08),
-      inset 0 0 1px rgba(255, 255, 255, 0.3) !important;
+  //box-shadow:
+  //    0 20px 60px rgba(139, 115, 85, 0.12),
+  //    0 12px 35px rgba(139, 115, 85, 0.08),
+  //    0 6px 18px rgba(139, 115, 85, 0.06),
+  //    0 2px 8px rgba(139, 115, 85, 0.04),
+  //    inset 0 2px 0 rgba(255, 255, 255, 0.25),
+  //    inset 0 -2px 0 rgba(139, 115, 85, 0.08),
+  //    inset 0 0 1px rgba(255, 255, 255, 0.3) !important;
 
   // 多层边框光晕效果
   &::before {
@@ -437,12 +437,12 @@ $radius-tiny: 8px;            // 微小圆角
     left: -2px;
     right: -2px;
     bottom: -2px;
-    background: linear-gradient(135deg,
-        rgba(244, 228, 188, 0.6),
-        rgba(74, 155, 142, 0.4),
-        rgba(244, 228, 188, 0.5),
-        rgba(74, 155, 142, 0.3),
-        rgba(244, 228, 188, 0.6));
+    //background: linear-gradient(135deg,
+    //    rgba(244, 228, 188, 0.6),
+    //    rgba(74, 155, 142, 0.4),
+    //    rgba(244, 228, 188, 0.5),
+    //    rgba(74, 155, 142, 0.3),
+    //    rgba(244, 228, 188, 0.6));
     border-radius: $radius-large;
     z-index: -1;
     opacity: 0;
@@ -458,10 +458,10 @@ $radius-tiny: 8px;            // 微小圆角
     left: -6px;
     right: -6px;
     bottom: -6px;
-    background: radial-gradient(ellipse at center,
-        rgba(74, 155, 142, 0.15) 0%,
-        rgba(244, 228, 188, 0.1) 40%,
-        transparent 70%);
+    //background: radial-gradient(ellipse at center,
+    //    rgba(74, 155, 142, 0.15) 0%,
+    //    rgba(244, 228, 188, 0.1) 40%,
+    //    transparent 70%);
     border-radius: $radius-large;
     z-index: -2;
     opacity: 0;
@@ -474,15 +474,15 @@ $radius-tiny: 8px;            // 微小圆角
     transform: translateY(-12px) scale(1.015);
 
     // 悬浮时的增强立体阴影
-    box-shadow:
-        0 35px 80px rgba(139, 115, 85, 0.18),
-        0 20px 50px rgba(139, 115, 85, 0.12),
-        0 12px 30px rgba(139, 115, 85, 0.08),
-        0 6px 15px rgba(139, 115, 85, 0.06),
-        0 2px 8px rgba(139, 115, 85, 0.04),
-        inset 0 3px 0 rgba(255, 255, 255, 0.35),
-        inset 0 -3px 0 rgba(139, 115, 85, 0.12),
-        inset 0 0 2px rgba(255, 255, 255, 0.4) !important;
+    //box-shadow:
+    //    0 35px 80px rgba(139, 115, 85, 0.18),
+    //    0 20px 50px rgba(139, 115, 85, 0.12),
+    //    0 12px 30px rgba(139, 115, 85, 0.08),
+    //    0 6px 15px rgba(139, 115, 85, 0.06),
+    //    0 2px 8px rgba(139, 115, 85, 0.04),
+    //    inset 0 3px 0 rgba(255, 255, 255, 0.35),
+    //    inset 0 -3px 0 rgba(139, 115, 85, 0.12),
+    //    inset 0 0 2px rgba(255, 255, 255, 0.4) !important;
 
     &::before {
       opacity: 1;
@@ -524,13 +524,13 @@ $radius-tiny: 8px;            // 微小圆角
             rgba(248, 252, 250, 0.25) 100%) !important;
 
     // 温和的呼吸动画
-    animation: gentleBreathe 4.5s ease-in-out infinite;
+    //animation: gentleBreathe 4.5s ease-in-out infinite;
 
-    &:hover,
-    &.desert-cube-card--hovered {
-      transform: translateY(-15px) scale(1.02);
-      animation: gentleBreatheFast 3.5s ease-in-out infinite;
-    }
+    //&:hover,
+    //&.desert-cube-card--hovered {
+    //  transform: translateY(-15px) scale(1.02);
+    //  animation: gentleBreatheFast 3.5s ease-in-out infinite;
+    //}
 
     // 更柔和的内容动画
     .cube-header {

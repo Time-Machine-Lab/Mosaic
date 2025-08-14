@@ -1,0 +1,13 @@
+[
+	{
+		"changeRecord":{
+			"methodName":"context",
+			"newSourceCode":"@GetMapping(value = { \"/context\" })\r\npublic String context() {\r\n    Cube cube = this.context.getCube((GUID) new GUUID(\"12345\"));\r\n    GoldenShovel.executeBootStrap().slotId(\"test\").run();\r\n    return Optional.ofNullable(cube).map(ConfigurableEntity::toString).orElse(\"null\");\r\n}",
+			"oldSourceCode":"@GetMapping(value = { \"/context\" })\r\npublic String context() {\r\n    Cube cube = this.context.getCube((GUID) new GUUID(\"12345\"));\r\n    return Optional.ofNullable(cube).map(ConfigurableEntity::toString).orElse(\"null\");\r\n}"
+		},
+		"changeType":"INSERT_AFTER",
+		"className":"io.github.tml.controller.UserController",
+		"createdAt":1751993779197,
+		"versionId":"io.github.tml.controller.UserControllercontext2025-07-09T00:56:19.197206800"
+	}
+]

@@ -2,6 +2,8 @@
 import {uploadPluginJar, getCubeList} from "@/api/plugin/pluginApi";
 import {type Cube} from "@/api/plugin/pluginType";
 import {useCubeStore} from '@/store/data/useCubeStore'
+import MinecraftButtonComponent from "../../components/common/MinecraftButtonComponent.vue";
+import MinecraftInputComponent from "../../components/common/MinecraftInputComponent.vue";
 const cubeStore = useCubeStore()
 const uploadRef = ref()
 const upload = (item) => {
@@ -15,7 +17,10 @@ const upload = (item) => {
 }
 
 const cubeList = computed(()=>{
-  return cubeStore.cubeList
+  if(key.value==='')return cubeStore.cubeList
+  return cubeStore.cubeList.filter((cube)=>{
+    return cube.name.toLowerCase().includes(key.value.toLowerCase())
+  })
 })
 const getCubeListFunction = () => {
   cubeStore.getCubes()
@@ -23,19 +28,22 @@ const getCubeListFunction = () => {
 onMounted(()=>{
   getCubeListFunction()
 })
+const key = ref('')
 </script>
 <template>
   <div class="minecraft-header minecraft-glow">
     <h1>{{$t('menu.plugins')}}</h1>
   </div>
   <div class="operation">
-    <v-btn
-        color="primary" small @click="uploadRef.click()">
-      {{$t("plugins.upload")}}
-      <template v-slot:prepend>
+    <MinecraftButtonComponent style="flex: 1;">
+      <div class="mx-auto">
         <v-icon>mdi-upload</v-icon>
-      </template>
-    </v-btn>
+        <span>
+          {{$t("plugins.upload")}}
+        </span>
+      </div>
+    </MinecraftButtonComponent>
+    <MinecraftInputComponent style="flex: 9" v-model="key" :placeholder="'Plugin Name'"></MinecraftInputComponent>
   </div>
   <ul class="cube-list">
     <li class="cube-list-item" v-for="cube in cubeList" :key="cube.cubeId">
@@ -54,7 +62,7 @@ onMounted(()=>{
   gap: 24px;
   row-gap: 24px;
   .cube-list-item{
-    width: 30%;
+    //width: 40%;
     cursor: pointer;
   }
 }
@@ -68,7 +76,8 @@ onMounted(()=>{
 .operation{
   width: 100%;
   display: flex;
-  justify-content: end;
-  padding: 16px 48px;
+  justify-content: space-between;
+  padding: 16px 0;
+  gap: 24px;
 }
 </style>

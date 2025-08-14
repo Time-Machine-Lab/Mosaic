@@ -139,6 +139,7 @@ public class HotSwapUtil {
         try {
             boolean[] flag = {false};
             cu.findAll(MethodDeclaration.class).forEach(method -> {
+                System.out.println(method.getNameAsString());
                 method.getBody().ifPresent(body -> {
                     NodeList<Statement> stmts = body.getStatements();
                     for (int i = 0; i < stmts.size(); i++) {
@@ -146,6 +147,7 @@ public class HotSwapUtil {
                         if (stmt.getBegin().isEmpty() || stmt.getBegin().get().line != targetLine) continue;
 
                         applyOperation(stmts, i, stmt, operation, codeSupplier);
+                        System.out.println(stmts.size());
                         flag[0] = true;
                     }
                 });
@@ -233,6 +235,8 @@ public class HotSwapUtil {
             Supplier<String> codeSupplier,
             Set<String> importsToAdd
     ) {
+        System.out.println("-----------------"+sourceCode);
+        System.out.println("-----------------"+codeSupplier);
         CompilationUnit cu = parseSourceCode(sourceCode);
         addImports(cu, importsToAdd);
         processMethodStatements(cu, targetLine, operation, codeSupplier);

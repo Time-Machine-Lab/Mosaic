@@ -642,3 +642,10 @@ body {
     }
   }
 }
+
+
+// CubeListItemComponent.vue
+.cube-card-container{
+  border-radius: 8px;
+  @include minecraft-block(rgba(0,0,0,0.1));
+}
