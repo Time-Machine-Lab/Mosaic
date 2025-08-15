@@ -214,7 +214,7 @@
                 <version>0.4.0</version> <!-- 可用最新稳定版 -->
                 <extensions>true</extensions>
                 <configuration>
-                    <publishingServerId>central</publishingServerId>
+                    <publishingServerId>ossrh</publishingServerId>
                     <tokenAuth>true</tokenAuth>
                 </configuration>
             </plugin>
