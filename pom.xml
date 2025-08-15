@@ -6,7 +6,7 @@
 
     <groupId>io.github.timemachinelab</groupId>
     <artifactId>Mosaic</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>0.0.6-beta</version>
     <packaging>pom</packaging>
 
     <name>mosaic</name>
@@ -153,75 +153,49 @@
                         </executions>
                     </plugin>
 
-                    <!--gpg插件-->
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
-                        <executions>
-                            <execution>
-                                <id>sign-artifacts</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>sign</goal>
-                                </goals>
-                            </execution>
-                        </executions>
-                    </plugin>
-
                 </plugins>
             </build>
 
-            <distributionManagement>
-                <snapshotRepository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>
-                </snapshotRepository>
-                <repository>
-                    <id>ossrh</id>
-                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-                </repository>
-            </distributionManagement>
+<!--            <distributionManagement>-->
+<!--                <snapshotRepository>-->
+<!--                    <id>ossrh</id>-->
+<!--                    <url>https://oss.sonatype.org/content/repositories/snapshots</url>-->
+<!--                </snapshotRepository>-->
+<!--                <repository>-->
+<!--                    <id>ossrh</id>-->
+<!--                    <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>-->
+<!--                </repository>-->
+<!--            </distributionManagement>-->
         </profile>
     </profiles>
 
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.0.0</version>
-                <configuration>
-                    <additionalOptions>
-                        <additionalOption>-Xdoclint:none</additionalOption>
-                    </additionalOptions>
-                </configuration>
-            </plugin>
-            <!-- Source -->
+            <!-- Maven Source/Javadoc 可保留你原有配置，这里给一个较新示例 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
-                        <phase>package</phase>
+                        <id>attach-sources</id>
                         <goals>
                             <goal>jar-no-fork</goal>
                         </goals>
                     </execution>
                 </executions>
             </plugin>
-            <!-- Javadoc -->
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.6.3</version>
                 <configuration>
                     <charset>UTF-8</charset>
                     <encoding>UTF-8</encoding>
                     <docencoding>UTF-8</docencoding>
                     <additionalJOption>-Xdoclint:none</additionalJOption>
-                    <javadocExecutable>${java.home}/bin/javadoc</javadocExecutable>
                 </configuration>
                 <executions>
                     <execution>
@@ -232,35 +206,20 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-gpg-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>sign-artifacts</id>
-                        <phase>verify</phase>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <gpgArguments>
-                        <argument>--pinentry-mode</argument>
-                        <argument>loopback</argument>
-                    </gpgArguments>
-                </configuration>
-            </plugin>
+
+            <!-- 关键：Central Publishing 插件（只在根 POM 配置一次） -->
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.4.0</version>
+                <version>0.4.0</version> <!-- 可用最新稳定版 -->
                 <extensions>true</extensions>
                 <configuration>
-                    <publishingServerId>ossrh</publishingServerId>
+                    <publishingServerId>central</publishingServerId>
                     <tokenAuth>true</tokenAuth>
                 </configuration>
             </plugin>
+
+            <!-- 编译器插件（保留你原有 11 的配置即可） -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -271,15 +230,6 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>versions-maven-plugin</artifactId>
-                <version>2.3</version>
-                <configuration>
-                    <generateBackupPoms>false</generateBackupPoms>
-                </configuration>
-            </plugin>
         </plugins>
-
     </build>
 </project>
