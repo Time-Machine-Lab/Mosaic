@@ -172,6 +172,31 @@
 
     <build>
         <plugins>
+
+            <!-- 关键：对所有工件签名 -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <!-- 让 GnuPG 2.x 支持口令从命令行传入 -->
+                    <gpgArguments>
+                        <arg>--pinentry-mode</arg>
+                        <arg>loopback</arg>
+                    </gpgArguments>
+                    <!-- 如需指定 key，可加：<keyname>${env.GPG_KEY_ID}</keyname> -->
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <!-- 在 verify 阶段签名，确保所有模块产物（含 POM）都被签 -->
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Maven Source/Javadoc 可保留你原有配置，这里给一个较新示例 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
