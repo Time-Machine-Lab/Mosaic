@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>io.github.timemachinelab</groupId>
     <version>0.0.6-beta</version>
     <name>mosaic-starter</name>
     <description>
@@ -14,7 +13,7 @@
     <parent>
         <groupId>io.github.timemachinelab</groupId>
         <artifactId>Mosaic</artifactId>
-        <version>1.0-SNAPSHOT</version>
+        <version>0.0.6-beta</version>
     </parent>
 
     <artifactId>mosaic-starter</artifactId>
@@ -76,7 +75,7 @@
         <dependency>
             <groupId>io.github.timemachinelab</groupId>
             <artifactId>mosaic-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>0.0.6-beta</version>
         </dependency>
     </dependencies>
 </project>
